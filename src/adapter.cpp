@@ -4,10 +4,7 @@
 
 #include <adapter.h>
 
-bool val_flag{false};
-
-bool is_ghost_debug()
-{
+bool is_ghost_debug(){
     return gArgs.GetBoolArg("-ghostdebug", DEFAULT_GHOSTDEBUG);
 }
 
@@ -24,29 +21,8 @@ bool exploit_fixtime_passed(uint32_t nTime)
     return false;
 }
 
-void set_full_validation() {
-    val_flag = true;
-    LogPrintf("%s - set to true\n", __func__);
-}
-
-bool is_full_validation() {
-    // bool result = val_flag || (::ChainActive().Height() > (int) DISABLE_MLSAG_VER_BEFORE_HEIGHT);
-    // return result;
-    return val_flag;
-}
-
-bool are_anonspends_considered() {
-    /* Since we don't have spork integrated
-    bool result = is_full_validation() ||
-                  (sporkManager.IsSporkActive(SPORK_1_ANONRESTRICT_ENABLED) ||
-                   sporkManager.IsSporkActive(SPORK_2_ANONSTANDARD_ENABLED));
-                   */
-    bool result = is_full_validation();
-    return result;
-}
-
 bool is_output_recovery_address(const std::string& dest) {
-    const std::string recoveryAddress = "005ef4ba72b101cc05ba7edc";
+    const std::string recoveryAddress = Params().GetRecoveryAddress();
     if (dest.find(recoveryAddress) != std::string::npos) {
         return true;
     }
@@ -60,7 +36,7 @@ bool is_anonblind_transaction_ok(const CTransactionRef& tx, unsigned int totalRi
 
     if (totalRing > 0) {
 
-        if (!is_full_validation()) {
+        if (!Params().GetFullValidation()) {
             return true;
         }
 
@@ -70,10 +46,6 @@ bool is_anonblind_transaction_ok(const CTransactionRef& tx, unsigned int totalRi
         }
 
         //! for restricted anon/blind spends
-        // There was this if, but since we don't have spork we just remove it to make
-        // it the default behavior
-        // if (sporkManager.IsSporkActive(SPORK_1_ANONRESTRICT_ENABLED))
-
         //! no mixed component stakes allowed
         if (tx->IsCoinStake()) {
             allowedForUse = false;
@@ -113,11 +85,6 @@ bool is_anonblind_transaction_ok(const CTransactionRef& tx, unsigned int totalRi
                 }
             }
         }
-    }
-
-    //! zero ct/rct is fine always..
-    if (totalRing == 0) {
-        allowedForUse = true;
     }
 
     return allowedForUse;

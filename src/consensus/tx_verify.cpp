@@ -26,7 +26,7 @@
 // Ghost dependencies
 #include <blind.h>
 #include <insight/balanceindex.h>
-
+#include <adapter.h>
 
 bool IsFinalTx(const CTransaction &tx, int nBlockHeight, int64_t nBlockTime)
 {
@@ -519,6 +519,17 @@ bool Consensus::CheckTxInputs(const CTransaction& tx, TxValidationState& state, 
         if (rv != 1) {
             return state.Invalid(TxValidationResult::TX_CONSENSUS, "bad-commitment-sum");
         }
+    }
+
+    //! all other contextual/indepth tests must pass first
+    unsigned int totalBlindInOut = nCTInputs + nCTOutputs + nRingCTInputs + nRingCTOutputs;
+    if ((totalBlindInOut > 0) && is_full_validation() && !are_anonspends_considered()) {
+        return state.Invalid(TxValidationResult::TX_CONSENSUS, "anon-blind-tx-disabled");
+    }
+
+    const CTransactionRef& in_tx = MakeTransactionRef(tx);
+    if (!is_anonblind_transaction_ok(in_tx, totalBlindInOut)) {
+        return state.Invalid(TxValidationResult::TX_CONSENSUS, "anon-blind-tx-invalid");
     }
 
     return true;

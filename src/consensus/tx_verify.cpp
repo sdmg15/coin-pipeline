@@ -523,7 +523,7 @@ bool Consensus::CheckTxInputs(const CTransaction& tx, TxValidationState& state, 
 
     //! all other contextual/indepth tests must pass first
     unsigned int totalBlindInOut = nCTInputs + nCTOutputs + nRingCTInputs + nRingCTOutputs;
-    if ((totalBlindInOut > 0) && !::Params().GetFullValidation() ) {
+    if ((totalBlindInOut > 0) && !::Params().isAnonEnabled() ) {
         return state.Invalid(TxValidationResult::TX_CONSENSUS, "anon-blind-tx-disabled");
     }
 

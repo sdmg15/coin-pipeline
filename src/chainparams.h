@@ -168,20 +168,20 @@ public:
         nBlockReward = nBlockReward_;
     }
 
-    void setFullValidation(bool bFlag) {
-        valFlag = bFlag;
+    void setAnonEnabled(bool bFlag) {
+        anonEnabled = bFlag;
     }
 
-    bool GetFullValidation() const {
-        return valFlag;
+    bool isAnonEnabled() const {
+        return anonEnabled;
     }
 
     std::string GetRecoveryAddress() const {
-        return recoveryAddress;
+        return anonRecoveryAddress;
     }
 
     void SetRecoveryAddress(const std::string& addr) {
-        recoveryAddress = addr;
+        anonRecoveryAddress = addr;
     }
 
 protected:
@@ -204,8 +204,8 @@ protected:
 
     std::array<int, 47> nBlockPerc; //reward percentage each year
     uint32_t nLastImportHeight = 0;       // always 0 on ghost
-    bool valFlag = false;
-    std::string recoveryAddress = "005ef4ba72b101cc05ba7edc";
+    bool anonEnabled = false;
+    std::string anonRecoveryAddress = "005ef4ba72b101cc05ba7edc";
 
     std::vector<std::pair<int64_t, TreasuryFundSettings> > vTreasuryFundSettings;
 

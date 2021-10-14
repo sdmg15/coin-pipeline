@@ -4,7 +4,7 @@
 
 #include <adapter.h>
 
-bool is_ghost_debug(){
+bool is_ghost_debug() {
     return gArgs.GetBoolArg("-ghostdebug", DEFAULT_GHOSTDEBUG);
 }
 
@@ -36,8 +36,8 @@ bool is_anonblind_transaction_ok(const CTransactionRef& tx, unsigned int totalRi
 
     if (totalRing > 0) {
 
-        if (!Params().GetFullValidation()) {
-            return true;
+        if (!Params().isAnonEnabled()) {
+            return false;
         }
 
         const uint256& txHash = tx->GetHash();

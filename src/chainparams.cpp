@@ -412,7 +412,7 @@ public:
         consensus.exploit_fix_1_time = 1614992554;      // 2021-03-06 01:00:00 GMT+8
         consensus.exploit_fix_2_time = 1626109200;      // 2021-07-12 17:00:00 UTC
 
-        consensus.m_frozen_anon_index = 27340;
+        consensus.m_frozen_anon_index = 2379; // Called LAST_ANONINDEX = 2379 by Barry 
         consensus.m_frozen_blinded_height = 884433;
 
 
@@ -641,6 +641,7 @@ public:
         consensus.defaultAssumeValid = uint256S("0xa7670a4ec4a80183a41c37c0bb377deb25e64d0d9f0e1b9cd69f832c315f2f31"); // 940090
 
         consensus.nMinRCTOutputDepth = 12;
+        consensus.m_frozen_anon_index = 2379;
 
         pchMessageStart[0] = 0x08;
         pchMessageStart[1] = 0x11;
@@ -897,6 +898,8 @@ public:
         consensus.smsg_fee_max_delta_percent = 4300;
         consensus.smsg_min_difficulty = 0x1f0fffff;
         consensus.smsg_difficulty_max_delta = 0xffff;
+
+        consensus.m_frozen_anon_index = 2379;
 
         consensus.powLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // two weeks

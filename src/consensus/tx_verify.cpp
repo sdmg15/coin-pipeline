@@ -262,15 +262,8 @@ bool Consensus::CheckTxInputs(const CTransaction& tx, TxValidationState& state, 
                     }
                     ofs += nB;
                     if (nIndex <= state.m_consensus_params->m_frozen_anon_index) {
-                        state.m_spends_frozen_blinded = true;
-                        if (!IsWhitelistedAnonOutput(nIndex)) {
-                            spends_tainted_blinded = true;
-                        }
-                        if (state.m_exploit_fix_2 && IsBlacklistedAnonOutput(nIndex)) {
-                            return state.Invalid(TxValidationResult::TX_CONSENSUS, "bad-txns-frozen-blinded-blacklisted");
-                        }
-                    } else {
-                        spends_post_fork_blinded = true;
+                        LogPrintf("%s: Attempt to spend from deprecated anon RCT set (index: %d)\n", __func__, nIndex);
+                        return state.Invalid(TxValidationResult::TX_CONSENSUS, "bad-anonin-extract-i");
                     }
                 }
             }

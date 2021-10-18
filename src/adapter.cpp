@@ -36,7 +36,7 @@ bool is_anonblind_transaction_ok(const CTransactionRef& tx, unsigned int totalRi
 
     if (totalRing > 0) {
 
-        if (!Params().isAnonEnabled()) {
+        if (!Params().IsAnonEnabled()) {
             return false;
         }
 
@@ -61,7 +61,7 @@ bool is_anonblind_transaction_ok(const CTransactionRef& tx, unsigned int totalRi
 
         //! split among no more than three outputs
         unsigned int outSize = tx->vpout.size();
-        if (outSize > 3) {
+        if (outSize > Params().GetAnonMaxOutputSize()) {
             allowedForUse = false;
             LogPrintf("%s - transaction %s has more than 3 outputs total\n", __func__, txHash.ToString());
         }
@@ -86,6 +86,10 @@ bool is_anonblind_transaction_ok(const CTransactionRef& tx, unsigned int totalRi
             }
         }
     }
-
+    
+    if(Params().IsAnonEnabled()){
+        allowedForUse = true;
+    }
+    
     return allowedForUse;
 }

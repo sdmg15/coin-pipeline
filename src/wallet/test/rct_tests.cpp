@@ -62,6 +62,9 @@ bool ProcessNewBlock(const CChainParams& chainparams, const std::shared_ptr<cons
 
 BOOST_AUTO_TEST_CASE(rct_test)
 {
+    RegtestParams().SetAnonEnabled(true);
+    RegtestParams().SetAnonMaxOutputSize(4);
+
     SeedInsecureRand();
     CHDWallet *pwallet = pwalletMain.get();
     util::Ref context{m_node};
@@ -109,7 +112,7 @@ BOOST_AUTO_TEST_CASE(rct_test)
 
     std::vector<CTempRecipient> vecSend;
     CTxDestination dest = PKHash(pk_to);
-    vecSend.emplace_back(OUTPUT_STANDARD, 1 * COIN, dest);
+    vecSend.emplace_back(OUTPUT_STANDARD, 10 * COIN, dest);
 
     CTransactionRef tx_new;
     CWalletTx wtx(pwallet, tx_new);
@@ -128,6 +131,7 @@ BOOST_AUTO_TEST_CASE(rct_test)
     state.m_spend_height = nSpendHeight;
     CAmount txfee = 0;
     CCoinsViewCache &view = ::ChainstateActive().CoinsTip();
+
     BOOST_REQUIRE(Consensus::CheckTxInputs(*wtx.tx, state, view, nSpendHeight, txfee));
     BOOST_REQUIRE(VerifyMLSAG(*wtx.tx, state));
 
@@ -174,7 +178,7 @@ BOOST_AUTO_TEST_CASE(rct_test)
     // Pick inputs so two are used
     CCoinControl cctl;
     std::vector<COutputR> vAvailableCoins;
-    pwallet->AvailableAnonCoins(vAvailableCoins, true, &cctl, 100000);
+    pwallet->AvailableAnonCoins(vAvailableCoins, true, &cctl, 600000);
     BOOST_REQUIRE(vAvailableCoins.size() > 2);
     CAmount prevouts_sum = 0;
     for (const auto &output : vAvailableCoins) {
@@ -452,5 +456,35 @@ BOOST_AUTO_TEST_CASE(rct_test)
 
     SetNumBlocksOfPeers(peer_blocks);
 }
+
+BOOST_AUTO_TEST_CASE(rct_disabled) {
+    SeedInsecureRand();
+    CHDWallet *pwallet = pwalletMain.get();
+    util::Ref context{m_node};
+    UniValue rv;
+    std::string sError;
+
+    // Import the regtest genesis coinbase keys
+    BOOST_CHECK_NO_THROW(rv = CallRPC("extkeyimportmaster tprv8ZgxMBicQKsPeK5mCpvMsd1cwyT1JZsrBN82XkoYuZY1EVK7EwDaiL9sDfqUU5SntTfbRfnRedFWjg5xkDG5i3iwd3yP7neX5F2dtdCojk4", context));
+    BOOST_CHECK_NO_THROW(rv = CallRPC("extkeyimportmaster tprv8ZgxMBicQKsPe3x7bUzkHAJZzCuGqN6y28zFFyg5i7Yqxqm897VCnmMJz6QScsftHDqsyWW5djx6FzrbkF9HSD3ET163z1SzRhfcWxvwL4G", context));
+    BOOST_CHECK_NO_THROW(rv = CallRPC("getnewextaddress lblHDKey", context));
+
+    CTxDestination stealth_address;
+    CAmount base_supply = 12500000000000;
+    {
+        LOCK(pwallet->cs_wallet);
+        pwallet->SetBroadcastTransactions(true);
+        const auto bal = pwallet->GetBalance();
+        BOOST_REQUIRE(bal.m_mine_trusted == base_supply);
+
+        BOOST_CHECK_NO_THROW(rv = CallRPC("getnewstealthaddress", context));
+        stealth_address = DecodeDestination(part::StripQuotes(rv.write()));
+    }
+    BOOST_REQUIRE(::ChainActive().Tip()->nMoneySupply == base_supply);
+
+    AddTxn(pwallet, stealth_address, OUTPUT_STANDARD, OUTPUT_RINGCT, 20 * COIN, 0, "anon-blind-tx-disabled");
+    
+}
+
 
 BOOST_AUTO_TEST_SUITE_END()

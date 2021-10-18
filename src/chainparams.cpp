@@ -641,7 +641,7 @@ public:
         consensus.defaultAssumeValid = uint256S("0xa7670a4ec4a80183a41c37c0bb377deb25e64d0d9f0e1b9cd69f832c315f2f31"); // 940090
 
         consensus.nMinRCTOutputDepth = 12;
-        consensus.m_frozen_anon_index = 2379;
+        consensus.m_frozen_anon_index = 0;
 
         pchMessageStart[0] = 0x08;
         pchMessageStart[1] = 0x11;
@@ -899,7 +899,7 @@ public:
         consensus.smsg_min_difficulty = 0x1f0fffff;
         consensus.smsg_difficulty_max_delta = 0xffff;
 
-        consensus.m_frozen_anon_index = 2379;
+        consensus.m_frozen_anon_index = 5;
 
         consensus.powLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // two weeks

@@ -168,11 +168,11 @@ public:
         nBlockReward = nBlockReward_;
     }
 
-    void setAnonEnabled(bool bFlag) {
+    void SetAnonEnabled(bool bFlag) {
         anonEnabled = bFlag;
     }
 
-    bool isAnonEnabled() const {
+    bool IsAnonEnabled() const {
         return anonEnabled;
     }
 
@@ -182,6 +182,14 @@ public:
 
     void SetRecoveryAddress(const std::string& addr) {
         anonRecoveryAddress = addr;
+    }
+
+    void SetAnonMaxOutputSize(uint32_t size){
+        anonMaxOutputSize = size;
+    }
+
+    uint32_t GetAnonMaxOutputSize() const {
+        return anonMaxOutputSize;
     }
 
 protected:
@@ -206,6 +214,7 @@ protected:
     uint32_t nLastImportHeight = 0;       // always 0 on ghost
     bool anonEnabled = false;
     std::string anonRecoveryAddress = "005ef4ba72b101cc05ba7edc";
+    std::uint32_t anonMaxOutputSize = 3;
 
     std::vector<std::pair<int64_t, TreasuryFundSettings> > vTreasuryFundSettings;
 

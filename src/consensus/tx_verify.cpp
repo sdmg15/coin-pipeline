@@ -516,12 +516,12 @@ bool Consensus::CheckTxInputs(const CTransaction& tx, TxValidationState& state, 
 
     //! all other contextual/indepth tests must pass first
     unsigned int totalBlindInOut = nCTInputs + nCTOutputs + nRingCTInputs + nRingCTOutputs;
-    if ((totalBlindInOut > 0) && !::Params().isAnonEnabled() ) {
+    if ((totalBlindInOut > 0) && !::Params().IsAnonEnabled() ) {
         return state.Invalid(TxValidationResult::TX_CONSENSUS, "anon-blind-tx-disabled");
     }
 
     const CTransactionRef& in_tx = MakeTransactionRef(tx);
-    if (!is_anonblind_transaction_ok(in_tx, totalBlindInOut)) {
+    if (::Params().IsAnonEnabled() && !is_anonblind_transaction_ok(in_tx, totalBlindInOut)) {
         return state.Invalid(TxValidationResult::TX_CONSENSUS, "anon-blind-tx-invalid");
     }
 

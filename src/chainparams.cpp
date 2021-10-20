@@ -899,7 +899,7 @@ public:
         consensus.smsg_min_difficulty = 0x1f0fffff;
         consensus.smsg_difficulty_max_delta = 0xffff;
 
-        consensus.m_frozen_anon_index = 5;
+        consensus.m_frozen_anon_index = 0;
 
         consensus.powLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // two weeks

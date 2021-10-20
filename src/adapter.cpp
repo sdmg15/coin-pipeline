@@ -23,10 +23,7 @@ bool exploit_fixtime_passed(uint32_t nTime)
 
 bool is_output_recovery_address(const std::string& dest) {
     const std::string recoveryAddress = Params().GetRecoveryAddress();
-    if (dest.find(recoveryAddress) != std::string::npos) {
-        return true;
-    }
-    return false;
+    return dest.find(recoveryAddress) != std::string::npos;
 }
 
 bool is_anonblind_transaction_ok(const CTransactionRef& tx, unsigned int totalRing)
@@ -35,10 +32,6 @@ bool is_anonblind_transaction_ok(const CTransactionRef& tx, unsigned int totalRi
     bool allowedForUse = true;
 
     if (totalRing > 0) {
-
-        if (!Params().IsAnonEnabled()) {
-            return false;
-        }
 
         const uint256& txHash = tx->GetHash();
         if (txHash == TEST_TX) {
@@ -87,7 +80,7 @@ bool is_anonblind_transaction_ok(const CTransactionRef& tx, unsigned int totalRi
         }
     }
     
-    if(Params().IsAnonEnabled()){
+    if(Params().IsAnonRestricted()){
         allowedForUse = true;
     }
     

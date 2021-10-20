@@ -58,6 +58,9 @@ std::vector<COutputR> GetAvailable(CHDWallet *pwallet, OutputTypes output_type, 
 
 BOOST_AUTO_TEST_CASE(frozen_blinded_test)
 {
+    // Enabling anon for testing
+    RegtestParams().SetAnonRestricted(true);
+    RegtestParams().SetAnonMaxOutputSize(4);
     SeedInsecureRand();
     CHDWallet *pwallet = pwalletMain.get();
     util::Ref context{m_node};
@@ -121,6 +124,9 @@ BOOST_AUTO_TEST_CASE(frozen_blinded_test)
     // Add some blinded txns
     uint256 txid_ct_plain_small = AddTxn(pwallet, stealth_address, OUTPUT_STANDARD, OUTPUT_CT, 11 * COIN);
     uint256 txid_ct_plain_large = AddTxn(pwallet, stealth_address, OUTPUT_STANDARD, OUTPUT_CT, 1100 * COIN);
+
+    // There is an issue here when the input_type is OUTPUT_RINGCT
+
     uint256 txid_ct_anon_small = AddTxn(pwallet, stealth_address, OUTPUT_RINGCT, OUTPUT_CT, 12 * COIN);
     uint256 txid_ct_anon_large = AddTxn(pwallet, stealth_address, OUTPUT_RINGCT, OUTPUT_CT, 1100 * COIN);
 
@@ -146,6 +152,7 @@ BOOST_AUTO_TEST_CASE(frozen_blinded_test)
         std::this_thread::sleep_for(std::chrono::milliseconds(250));
     }
 
+    RegtestParams().SetAnonRestricted(true);
     BOOST_REQUIRE(gArgs.GetBoolArg("-acceptanontxn", false)); // Was set in AppInitParameterInteraction
 
     // Exploit should fail

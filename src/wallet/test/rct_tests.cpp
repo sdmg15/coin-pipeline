@@ -62,7 +62,8 @@ bool ProcessNewBlock(const CChainParams& chainparams, const std::shared_ptr<cons
 
 BOOST_AUTO_TEST_CASE(rct_test)
 {
-    RegtestParams().SetAnonEnabled(true);
+    // Enabling anon for testing
+    RegtestParams().SetAnonRestricted(true);
     RegtestParams().SetAnonMaxOutputSize(4);
 
     SeedInsecureRand();
@@ -178,7 +179,7 @@ BOOST_AUTO_TEST_CASE(rct_test)
     // Pick inputs so two are used
     CCoinControl cctl;
     std::vector<COutputR> vAvailableCoins;
-    pwallet->AvailableAnonCoins(vAvailableCoins, true, &cctl, 600000);
+    pwallet->AvailableAnonCoins(vAvailableCoins, true, &cctl, 100000);
     BOOST_REQUIRE(vAvailableCoins.size() > 2);
     CAmount prevouts_sum = 0;
     for (const auto &output : vAvailableCoins) {
@@ -458,6 +459,9 @@ BOOST_AUTO_TEST_CASE(rct_test)
 }
 
 BOOST_AUTO_TEST_CASE(rct_disabled) {
+
+    // Anon disabled in the following tests
+    RegtestParams().SetAnonMaxOutputSize(4);
     SeedInsecureRand();
     CHDWallet *pwallet = pwalletMain.get();
     util::Ref context{m_node};
@@ -482,7 +486,7 @@ BOOST_AUTO_TEST_CASE(rct_disabled) {
     }
     BOOST_REQUIRE(::ChainActive().Tip()->nMoneySupply == base_supply);
 
-    AddTxn(pwallet, stealth_address, OUTPUT_STANDARD, OUTPUT_RINGCT, 20 * COIN, 0, "anon-blind-tx-disabled");
+    AddTxn(pwallet, stealth_address, OUTPUT_STANDARD, OUTPUT_RINGCT, 20 * COIN, 0, "anon-blind-tx-invalid");
     
 }
 

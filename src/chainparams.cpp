@@ -14,7 +14,7 @@
 #include <util/moneystr.h>
 #include <key/keyutil.h>
 #include <versionbitsinfo.h>
-
+#include <validation.h>
 #include <chain/chainparamsimport.h>
 
 #include <assert.h>
@@ -556,9 +556,10 @@ public:
             /* nTxCount */ 3317,
             /* dTxRate  */ 0.008253214698037342
         };
+        if (gArgs.IsArgSet("-anonrestricted")) {
+            anonRestricted = gArgs.GetBoolArg("-anonrestricted", DEFAULT_ANON_RESTRICTED);
+        }
     }
-
-
 
     void SetOld()
     {
@@ -722,6 +723,10 @@ public:
         // Address:      pdEmcAFUy6TLWjg2kuvVrP5ambhW3KzEJn
         vSporkAddresses = {"pdEmcAFUy6TLWjg2kuvVrP5ambhW3KzEJn"};
         nMinSporkKeys = 1;
+        
+        if (gArgs.IsArgSet("-anonrestricted")) {
+            anonRestricted = gArgs.GetBoolArg("-anonrestricted", DEFAULT_ANON_RESTRICTED);
+        }
 
 
         checkpointData = {
@@ -854,7 +859,9 @@ public:
         m_is_test_chain = true;
         m_is_mockable_chain = false;
 
-
+        if (gArgs.IsArgSet("-anonrestricted")) {
+            anonRestricted = gArgs.GetBoolArg("-anonrestricted", DEFAULT_ANON_RESTRICTED);
+        }
 
         // Private key:  DKXHWgYF9pbikLji2CWBh9JGB2f1DmfJhEj1YPZgSeEMHjSBSTN
         // Address:      mo8UNHBhbXjpRiWmyABeZigaVVXzC38N4h
@@ -1011,6 +1018,10 @@ public:
             0,
             0
         };
+
+        if (gArgs.IsArgSet("-anonrestricted")) {
+            anonRestricted = gArgs.GetBoolArg("-anonrestricted", DEFAULT_ANON_RESTRICTED);
+        }
     }
 
     void SetOld()

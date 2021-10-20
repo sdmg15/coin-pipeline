@@ -115,6 +115,7 @@ static const bool DEFAULT_DB_COMPRESSION = false; // set to true for insight
 static const unsigned int DEFAULT_BANSCORE_THRESHOLD = 100;
 static const bool DEFAULT_ACCEPT_ANON_TX = false;
 static const bool DEFAULT_ACCEPT_BLIND_TX = false;
+static const bool DEFAULT_ANON_RESTRICTED = true;
 
 
 

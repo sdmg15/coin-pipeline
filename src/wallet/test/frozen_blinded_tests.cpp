@@ -59,7 +59,7 @@ std::vector<COutputR> GetAvailable(CHDWallet *pwallet, OutputTypes output_type, 
 BOOST_AUTO_TEST_CASE(frozen_blinded_test)
 {
     // Enabling anon for testing
-    RegtestParams().SetAnonRestricted(true);
+    RegtestParams().SetAnonRestricted(false);
     RegtestParams().SetAnonMaxOutputSize(4);
     SeedInsecureRand();
     CHDWallet *pwallet = pwalletMain.get();
@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE(frozen_blinded_test)
         std::this_thread::sleep_for(std::chrono::milliseconds(250));
     }
 
-    RegtestParams().SetAnonRestricted(true);
+    RegtestParams().SetAnonRestricted(false);
     BOOST_REQUIRE(gArgs.GetBoolArg("-acceptanontxn", false)); // Was set in AppInitParameterInteraction
 
     // Exploit should fail

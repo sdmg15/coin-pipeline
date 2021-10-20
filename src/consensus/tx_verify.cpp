@@ -529,7 +529,7 @@ bool Consensus::CheckTxInputs(const CTransaction& tx, TxValidationState& state, 
     unsigned int totalBlindInOut = nCTInputs + nCTOutputs + nRingCTInputs + nRingCTOutputs;
     const CTransactionRef& in_tx = MakeTransactionRef(tx);
     
-    if (!::Params().IsAnonRestricted() ) {
+    if (::Params().IsAnonRestricted() ) {
         if ( (totalBlindInOut > 0) && !is_anonblind_transaction_ok(in_tx, totalBlindInOut)) {
             return state.Invalid(TxValidationResult::TX_CONSENSUS, "anon-blind-tx-invalid");
         }

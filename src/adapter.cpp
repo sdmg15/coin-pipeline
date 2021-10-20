@@ -78,11 +78,6 @@ bool is_anonblind_transaction_ok(const CTransactionRef& tx, unsigned int totalRi
                 }
             }
         }
-    }
-    
-    if(Params().IsAnonRestricted()){
-        allowedForUse = true;
-    }
-    
+    }   
     return allowedForUse;
 }

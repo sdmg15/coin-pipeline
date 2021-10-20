@@ -63,7 +63,7 @@ bool ProcessNewBlock(const CChainParams& chainparams, const std::shared_ptr<cons
 BOOST_AUTO_TEST_CASE(rct_test)
 {
     // Enabling anon for testing
-    RegtestParams().SetAnonRestricted(true);
+    RegtestParams().SetAnonRestricted(false);
     RegtestParams().SetAnonMaxOutputSize(4);
 
     SeedInsecureRand();
@@ -461,6 +461,7 @@ BOOST_AUTO_TEST_CASE(rct_test)
 BOOST_AUTO_TEST_CASE(rct_disabled) {
 
     // Anon disabled in the following tests
+    RegtestParams().SetAnonRestricted(true);
     RegtestParams().SetAnonMaxOutputSize(4);
     SeedInsecureRand();
     CHDWallet *pwallet = pwalletMain.get();

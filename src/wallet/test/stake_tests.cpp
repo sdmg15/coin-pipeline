@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE(stake_test)
     gArgs.ForceSetArg("-acceptblindtxn", "1"); // TODO: remove
 
     // Enabling anon for testing
-    RegtestParams().SetAnonRestricted(true);
+    RegtestParams().SetAnonRestricted(false);
     RegtestParams().SetAnonMaxOutputSize(4);
 
     SeedInsecureRand();

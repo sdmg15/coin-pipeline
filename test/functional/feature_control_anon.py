@@ -63,8 +63,27 @@ class ControlAnonTest(GhostTestFramework):
         tx = nodes[1].sendtypeto('ghost', 'blind', [{'address': sx0, 'amount': 15}])
         assert(self.wait_for_mempool(nodes[1], tx))
         assert(tx != "")
-        
 
+        # Start two nodes one accepting anon tx and another not. Then syncing should fail
+        self.stop_node(1)
+        self.stop_node(0)
+
+        self.start_node(0, ['-wallet=default_wallet', '-debug', '-anonrestricted=0', '-reservebalance=10000000', '-stakethreadconddelayms=500', '-txindex=1', '-maxtxfee=1'])
+        self.start_node(1, ['-wallet=default_wallet', '-debug', '-anonrestricted=1', '-reservebalance=10000000', '-stakethreadconddelayms=500', '-txindex=1', '-maxtxfee=1'])
+        self.connect_nodes_bi(0, 1) # Connect the two nodes
+
+        sx1 = nodes[0].getnewstealthaddress()
+        tx = nodes[0].sendtypeto('ghost', 'anon', [{'address': sx1, 'amount': 15}])
+        assert (self.wait_for_mempool(nodes[0], tx))
+        assert (tx != "")
+
+        rtx = nodes[0].getrawtransaction(tx)
+        try:
+            # Fail to add anon tx to mempool for node 1
+            r = nodes[1].sendrawtransaction(rtx)
+            assert (not self.wait_for_mempool(nodes[1], r))
+        except Exception as e:
+            assert ('anon-blind-tx-invalid' in str(e))
 
 if __name__ == '__main__':
     ControlAnonTest().main()

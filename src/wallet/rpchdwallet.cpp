@@ -5011,6 +5011,8 @@ static UniValue SendToInner(const JSONRPCRequest &request, OutputTypes typeIn, O
     bool exploit_fix_2_active = GetTime() >= consensusParams.exploit_fix_2_time;
     bool default_accept_anon = exploit_fix_2_active ? true : DEFAULT_ACCEPT_ANON_TX;
     bool default_accept_blind = exploit_fix_2_active ? true : DEFAULT_ACCEPT_BLIND_TX;
+    bool isAnonRestricted = gArgs.GetBoolArg("-anonrestricted", DEFAULT_ANON_RESTRICTED);
+
     if (!gArgs.GetBoolArg("-acceptanontxn", default_accept_anon) &&
         (typeIn == OUTPUT_RINGCT || typeOut == OUTPUT_RINGCT)) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Disabled output type.");
@@ -5019,6 +5021,15 @@ static UniValue SendToInner(const JSONRPCRequest &request, OutputTypes typeIn, O
         (typeIn == OUTPUT_CT || typeOut == OUTPUT_CT)) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Disabled output type.");
     }
+
+    if (isAnonRestricted && (typeIn == OUTPUT_RINGCT || typeOut == OUTPUT_RINGCT) ) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Disabled output type.");
+    }
+
+    if (isAnonRestricted && (typeIn == OUTPUT_CT || typeOut == OUTPUT_CT)) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Disabled output type.");
+    }
+
     if (typeOut == OUTPUT_RINGCT && GetTime() < consensusParams.rct_time) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Anon transactions not yet activated.");
     }

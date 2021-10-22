@@ -69,7 +69,8 @@ class ControlAnonTest(GhostTestFramework):
         self.stop_node(0)
 
         self.start_node(0, ['-wallet=default_wallet', '-debug', '-anonrestricted=0', '-reservebalance=10000000', '-stakethreadconddelayms=500', '-txindex=1', '-maxtxfee=1'])
-        self.start_node(1, ['-wallet=default_wallet', '-debug', '-anonrestricted=1', '-reservebalance=10000000', '-stakethreadconddelayms=500', '-txindex=1', '-maxtxfee=1'])
+        self.start_node(1, ['-wallet=default_wallet', '-debug', '-reservebalance=10000000', '-stakethreadconddelayms=500', '-txindex=1', '-maxtxfee=1'])
+       
         self.connect_nodes_bi(0, 1) # Connect the two nodes
 
         sx1 = nodes[0].getnewstealthaddress()
@@ -84,6 +85,22 @@ class ControlAnonTest(GhostTestFramework):
             assert (not self.wait_for_mempool(nodes[1], r))
         except Exception as e:
             assert ('anon-blind-tx-invalid' in str(e))
+
+        r = self.stakeBlocks(1, 0, False) # Stake in order to include the previously created tx inside a block
+
+        node0Block1 = nodes[0].getblock(nodes[0].getblockhash(1))
+        node0Block1Hex = nodes[0].getblock(nodes[0].getblockhash(1), 0)
+        
+        assert(tx in node0Block1['tx'])
+        print("CREATED TXID : " + tx)
+
+        ro = nodes[0].listtransactions()
+        for transaction in ro:
+            if tx == transaction['txid']:
+                assert(transaction['type'] == 'anon')
+
+        res = nodes[1].submitblock( node0Block1Hex )
+        assert (res == "duplicate-invalid")
 
 if __name__ == '__main__':
     ControlAnonTest().main()

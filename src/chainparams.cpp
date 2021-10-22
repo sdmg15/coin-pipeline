@@ -556,9 +556,9 @@ public:
             /* nTxCount */ 3317,
             /* dTxRate  */ 0.008253214698037342
         };
-        if (gArgs.IsArgSet("-anonrestricted")) {
-            anonRestricted = gArgs.GetBoolArg("-anonrestricted", DEFAULT_ANON_RESTRICTED);
-        }
+
+       anonRestricted = gArgs.GetBoolArg("-anonrestricted", DEFAULT_ANON_RESTRICTED);
+
     }
 
     void SetOld()
@@ -723,12 +723,8 @@ public:
         // Address:      pdEmcAFUy6TLWjg2kuvVrP5ambhW3KzEJn
         vSporkAddresses = {"pdEmcAFUy6TLWjg2kuvVrP5ambhW3KzEJn"};
         nMinSporkKeys = 1;
-        
-        if (gArgs.IsArgSet("-anonrestricted")) {
-            anonRestricted = gArgs.GetBoolArg("-anonrestricted", DEFAULT_ANON_RESTRICTED);
-        }
 
-
+        anonRestricted = gArgs.GetBoolArg("-anonrestricted", DEFAULT_ANON_RESTRICTED);
         checkpointData = {
             {
                 {127620, uint256S("0xe5ab909fc029b253bad300ccf859eb509e03897e7853e8bfdde2710dbf248dd1")},
@@ -858,10 +854,7 @@ public:
         fRequireStandard = true;
         m_is_test_chain = true;
         m_is_mockable_chain = false;
-
-        if (gArgs.IsArgSet("-anonrestricted")) {
-            anonRestricted = gArgs.GetBoolArg("-anonrestricted", DEFAULT_ANON_RESTRICTED);
-        }
+        anonRestricted = gArgs.GetBoolArg("-anonrestricted", DEFAULT_ANON_RESTRICTED);
 
         // Private key:  DKXHWgYF9pbikLji2CWBh9JGB2f1DmfJhEj1YPZgSeEMHjSBSTN
         // Address:      mo8UNHBhbXjpRiWmyABeZigaVVXzC38N4h
@@ -873,7 +866,7 @@ public:
 /**
  * Regression test
  */
-class CRegTestParams : public CChainParams {
+class CRegTestParams: public CChainParams {
 public:
     explicit CRegTestParams(const ArgsManager& args) {
         strNetworkID =  CBaseChainParams::REGTEST;
@@ -1018,10 +1011,9 @@ public:
             0,
             0
         };
+        
+        anonRestricted = gArgs.GetBoolArg("-anonrestricted", DEFAULT_ANON_RESTRICTED);
 
-        if (gArgs.IsArgSet("-anonrestricted")) {
-            anonRestricted = gArgs.GetBoolArg("-anonrestricted", DEFAULT_ANON_RESTRICTED);
-        }
     }
 
     void SetOld()

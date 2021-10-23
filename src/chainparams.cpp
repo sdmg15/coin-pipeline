@@ -866,7 +866,7 @@ public:
 /**
  * Regression test
  */
-class CRegTestParams: public CChainParams {
+class CRegTestParams : public CChainParams {
 public:
     explicit CRegTestParams(const ArgsManager& args) {
         strNetworkID =  CBaseChainParams::REGTEST;

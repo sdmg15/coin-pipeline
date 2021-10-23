@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE(rct_test)
 
     std::vector<CTempRecipient> vecSend;
     CTxDestination dest = PKHash(pk_to);
-    vecSend.emplace_back(OUTPUT_STANDARD, 10 * COIN, dest);
+    vecSend.emplace_back(OUTPUT_STANDARD, 1 * COIN, dest);
 
     CTransactionRef tx_new;
     CWalletTx wtx(pwallet, tx_new);

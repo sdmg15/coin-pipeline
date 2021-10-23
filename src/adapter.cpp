@@ -41,28 +41,22 @@ bool is_anonblind_transaction_ok(const CTransactionRef& tx, unsigned int totalRi
         //! for restricted anon/blind spends
         //! no mixed component stakes allowed
         if (tx->IsCoinStake()) {
-            allowedForUse = false;
             LogPrintf("%s - transaction %s is a coinstake with anon/blind components\n", __func__, txHash.ToString());
+            return false;
         }
 
         //! total value out must be greater than 5 coins
         CAmount totalValue = tx->GetValueOut();
         if ((totalValue - (5 * COIN)) < 0) {
-            allowedForUse = false;
             LogPrintf("%s - transaction %s has output of less than 5 coins total\n", __func__, txHash.ToString());
+            return false;
         }
 
         //! split among no more than three outputs
         unsigned int outSize = tx->vpout.size();
         if (outSize > Params().GetAnonMaxOutputSize()) {
-            allowedForUse = false;
             LogPrintf("%s - transaction %s has more than 3 outputs total\n", __func__, txHash.ToString());
-        }
-
-        //! if allowedForUse is false by this stage
-        if (!allowedForUse) {
-            LogPrintf("%s - transaction %s failed early in tests\n", __func__, txHash.ToString());
-            return false;
+            return false;           
         }
 
         //! recovery address must receive 99.95% of the output amount

@@ -28,9 +28,6 @@ bool is_output_recovery_address(const std::string& dest) {
 
 bool is_anonblind_transaction_ok(const CTransactionRef& tx, unsigned int totalRing)
 {
-    //! enabled by default
-    bool allowedForUse = true;
-
     if (totalRing > 0) {
 
         const uint256& txHash = tx->GetHash();
@@ -60,18 +57,17 @@ bool is_anonblind_transaction_ok(const CTransactionRef& tx, unsigned int totalRi
         }
 
         //! recovery address must receive 99.95% of the output amount
-        allowedForUse = false;
         for (unsigned int i=0; i < outSize; ++i) {
             if (tx->vpout[i]->IsStandardOutput()) {
                 std::string destTest = HexStr(tx->vpout[i]->GetStandardOutput()->scriptPubKey);
                 if (is_output_recovery_address(destTest)) {
                     if (tx->vpout[i]->GetStandardOutput()->nValue >= totalValue * 0.995) {
                         LogPrintf("Found recovery amount at vout.n #%d\n", i);
-                        allowedForUse = true;
+                        return true;
                     }
                 }
             }
         }
     }   
-    return allowedForUse;
+    return false;
 }

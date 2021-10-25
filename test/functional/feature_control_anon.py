@@ -4,14 +4,15 @@
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 from test_framework.test_particl import GhostTestFramework
-import os
-import shutil
-
+from test_framework.util import (
+    assert_raises_rpc_error,
+    assert_equal
+)
 class ControlAnonTest(GhostTestFramework):
     def set_test_params(self):
          # Start two nodes both of them with anon enabled
         self.setup_clean_chain = True
-        self.num_nodes = 2
+        self.num_nodes = 3
         # We don't pass -anonrestricted param here and let the default value to be used which is true
         self.extra_args = [['-debug', '-reservebalance=10000000', '-stakethreadconddelayms=500', '-txindex=1', '-maxtxfee=1', ] for i in range(self.num_nodes)]
 
@@ -21,86 +22,106 @@ class ControlAnonTest(GhostTestFramework):
     def setup_network(self, split=False):
         self.add_nodes(self.num_nodes, extra_args=self.extra_args)
         self.start_nodes()
-
-        self.connect_nodes_bi(0, 1) # Connect the two nodes
         self.sync_all()
 
     def run_test(self):
         nodes = self.nodes
         self.import_genesis_coins_a(nodes[0])
         self.import_genesis_coins_b(nodes[1])
+        self.import_genesis_coins_b(nodes[2])
 
         sx0 = nodes[0].getnewstealthaddress()
 
         # Create a transaction with anon output
-        try:
-            tx = nodes[1].sendtypeto('ghost', 'anon', [{'address': sx0, 'amount': 15}])
-            assert(not self.wait_for_mempool(nodes[1], tx))
-            self.stakeBlocks(2)
-        except Exception as e:
-            assert('Disabled output type.' in str(e))
-        
-        try:
-            tx = nodes[1].sendtypeto('ghost', 'blind', [{'address': sx0, 'amount': 15}])
-            assert(not self.wait_for_mempool(nodes[1], tx))
-        except Exception as e:
-            assert('Disabled output type.' in str(e))
+        # Note: Anon output is disabled so this should fail
+    
+        anon_tx_txid1 = nodes[1].sendtypeto('ghost', 'anon', [{'address': sx0, 'amount': 15}])
+        print("ANON TXID 1 " + anon_tx_txid1)
+        # This is False because the tx was created inside the wallet but
+        # unable to add it inside the mempool
+        assert not self.wait_for_mempool(nodes[1], anon_tx_txid1)
+
+        blind_tx_txid1 = nodes[1].sendtypeto('ghost', 'blind', [{'address': sx0, 'amount': 15}])
+        print("ANON TXID 2" + blind_tx_txid1)
+        assert not self.wait_for_mempool(nodes[1], blind_tx_txid1)
 
         # Restart the nodes with anon tx enabled
-        self.stop_node(1)
-        self.stop_node(0)
+        # Note: Anon output is enabled so this should pass both nodes should be able to sync together
+        self.stop_nodes()
 
         self.start_node(0, ['-wallet=default_wallet', '-debug', '-anonrestricted=0', '-reservebalance=10000000', '-stakethreadconddelayms=500', '-txindex=1', '-maxtxfee=1'])
         self.start_node(1, ['-wallet=default_wallet', '-debug', '-anonrestricted=0', '-reservebalance=10000000', '-stakethreadconddelayms=500', '-txindex=1', '-maxtxfee=1'])
+        self.start_node(2, ['-wallet=default_wallet', '-debug', '-anonrestricted=0', '-reservebalance=10000000', '-stakethreadconddelayms=500', '-txindex=1', '-maxtxfee=1'])
 
         self.connect_nodes_bi(0, 1) # Connect the two nodes
+        self.connect_nodes_bi(1, 2) # Connect the two nodes
         self.sync_all()
 
-        tx = nodes[1].sendtypeto('ghost', 'anon', [{'address': sx0, 'amount': 15}])
-        assert(self.wait_for_mempool(nodes[1], tx))
-        assert(tx != "")
-    
-        tx = nodes[1].sendtypeto('ghost', 'blind', [{'address': sx0, 'amount': 15}])
-        assert(self.wait_for_mempool(nodes[1], tx))
-        assert(tx != "")
+        # With -anonrestricted=0 the tx will be added to the mempool
+        anon_tx_txid2 = nodes[1].sendtypeto('ghost', 'anon', [{'address': sx0, 'amount': 15}])
+        print("ANON TXID 2 " + anon_tx_txid2)
+        assert self.wait_for_mempool(nodes[1], anon_tx_txid2)
 
-        # Start two nodes one accepting anon tx and another not. Then syncing should fail
-        self.stop_node(1)
-        self.stop_node(0)
+        blind_tx_txid2 = nodes[1].sendtypeto('ghost', 'blind', [{'address': sx0, 'amount': 15}])
+        print("BLIND TXID 2" + blind_tx_txid2)
+        assert self.wait_for_mempool(nodes[1], blind_tx_txid2)
+        self.sync_all()
+
+        # Restart the nodes: node 0 with anon enabled and node 1 with anon disabled
+        self.stop_nodes()
 
         self.start_node(0, ['-wallet=default_wallet', '-debug', '-anonrestricted=0', '-reservebalance=10000000', '-stakethreadconddelayms=500', '-txindex=1', '-maxtxfee=1'])
         self.start_node(1, ['-wallet=default_wallet', '-debug', '-reservebalance=10000000', '-stakethreadconddelayms=500', '-txindex=1', '-maxtxfee=1'])
-       
-        self.connect_nodes_bi(0, 1) # Connect the two nodes
+        self.start_node(2, ['-wallet=default_wallet', '-debug', '-reservebalance=10000000', '-stakethreadconddelayms=500', '-txindex=1', '-maxtxfee=1'])
 
-        sx1 = nodes[0].getnewstealthaddress()
-        tx = nodes[0].sendtypeto('ghost', 'anon', [{'address': sx1, 'amount': 15}])
-        assert (self.wait_for_mempool(nodes[0], tx))
-        assert (tx != "")
+        self.connect_nodes_bi(0, 1)
+        self.connect_nodes_bi(1, 2)
 
-        rtx = nodes[0].getrawtransaction(tx)
+        anon_tx_txid3 = nodes[0].sendtypeto('ghost', 'anon', [{'address': sx0, 'amount': 15}])
+        assert anon_tx_txid3 != ""
+        blind_tx_txid3 = nodes[0].sendtypeto('ghost', 'blind', [{'address': sx0, 'amount': 15}])
+        assert blind_tx_txid3 != ""
+
+        rawtx_anon_txid3 = nodes[0].getrawtransaction(anon_tx_txid3)
+        assert_raises_rpc_error(None, "anon-blind-tx-invalid", nodes[1].sendrawtransaction, rawtx_anon_txid3)
+
+        rawtx_blind_txid3 = nodes[0].getrawtransaction(blind_tx_txid3)
+        assert_raises_rpc_error(None, "anon-blind-tx-invalid", nodes[1].sendrawtransaction, rawtx_blind_txid3)
+        # Now try to sync node 0 and node 1 it will fail
         try:
-            # Fail to add anon tx to mempool for node 1
-            r = nodes[1].sendrawtransaction(rtx)
-            assert (not self.wait_for_mempool(nodes[1], r))
+            self.sync_all()
         except Exception as e:
-            assert ('anon-blind-tx-invalid' in str(e))
+            assert "Mempool sync timed out" in str(e)
 
-        r = self.stakeBlocks(1, 0, False) # Stake in order to include the previously created tx inside a block
+
+        self.stop_nodes()
+
+        self.start_node(0, ['-wallet=default_wallet', '-debug', '-anonrestricted=0', '-reservebalance=10000000', '-stakethreadconddelayms=500', '-txindex=1', '-maxtxfee=1'])
+        self.start_node(1, ['-wallet=default_wallet', '-debug', '-reservebalance=10000000', '-stakethreadconddelayms=500', '-txindex=1', '-maxtxfee=1'])
+        # This is just so that node 0 can stake
+        self.start_node(2, ['-wallet=default_wallet', '-debug', '-anonrestricted=0', '-reservebalance=10000000', '-stakethreadconddelayms=500', '-txindex=1', '-maxtxfee=1'])
+
+        self.connect_nodes_bi(0, 2)
+        assert nodes[0].getblockcount() == 0
+        assert nodes[1].getblockcount() == 0
+        assert nodes[2].getblockcount() == 0
+
+        anon_tx_txid4 = nodes[0].sendtypeto('ghost', 'anon', [{'address': sx0, 'amount': 15}])
+        assert anon_tx_txid4 != ""
+        self.stakeToHeight(1, nStakeNode=0, nSyncCheckNode=False, fSync=False)
 
         node0Block1 = nodes[0].getblock(nodes[0].getblockhash(1))
         node0Block1Hex = nodes[0].getblock(nodes[0].getblockhash(1), 0)
-        
-        assert(tx in node0Block1['tx'])
-        print("CREATED TXID : " + tx)
 
-        ro = nodes[0].listtransactions()
-        for transaction in ro:
-            if tx == transaction['txid']:
-                assert(transaction['type'] == 'anon')
+        print(node0Block1['tx'])
+        assert anon_tx_txid4 in node0Block1['tx']
 
-        res = nodes[1].submitblock( node0Block1Hex )
-        assert (res == "duplicate-invalid")
+        assert nodes[0].getblockcount() == 1
+        assert nodes[1].getblockcount() == 0
+        assert nodes[2].getblockcount() == 1
+
+        res = nodes[1].submitblock(node0Block1Hex)
+        assert_equal("anon-blind-tx-invalid", res)
 
 if __name__ == '__main__':
     ControlAnonTest().main()

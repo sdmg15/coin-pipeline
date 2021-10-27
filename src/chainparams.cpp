@@ -1013,6 +1013,12 @@ public:
         };
         
         anonRestricted = gArgs.GetBoolArg("-anonrestricted", DEFAULT_ANON_RESTRICTED);
+        // Full Script pubkey of the recovery addr: 76a91418cf988c85fdff42269cf1d39c526aa3530c778d88ac
+        anonRecoveryAddress = "69cf1d39c526aa3530c778d88ac";
+
+        // Pubkey:  pX9N6S76ZtA5BfsiJmqBbjaEgLMHpt58it
+        // PrivKey: 7shnesmjFcQZoxXCsNV55v7hrbQMtBfMNscuBkYrLa1mcJNPbXhU
+        anonMaxOutputSize = 5;
 
     }
 

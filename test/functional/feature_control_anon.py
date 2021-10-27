@@ -4,13 +4,15 @@
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 from test_framework.test_particl import GhostTestFramework
+
 from test_framework.util import (
     assert_raises_rpc_error,
     assert_equal
 )
+
 class ControlAnonTest(GhostTestFramework):
     def set_test_params(self):
-         # Start two nodes both of them with anon enabled
+         # Start three nodes both of them with anon enabled
         self.setup_clean_chain = True
         self.num_nodes = 3
         # We don't pass -anonrestricted param here and let the default value to be used which is true
@@ -113,7 +115,6 @@ class ControlAnonTest(GhostTestFramework):
         node0Block1 = nodes[0].getblock(nodes[0].getblockhash(1))
         node0Block1Hex = nodes[0].getblock(nodes[0].getblockhash(1), 0)
 
-        print(node0Block1['tx'])
         assert anon_tx_txid4 in node0Block1['tx']
 
         assert nodes[0].getblockcount() == 1

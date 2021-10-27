@@ -5684,8 +5684,6 @@ UniValue sendtypeto(const JSONRPCRequest &request)
 
     JSONRPCRequest req = request;
     req.params.erase(0, 2);
-
-    auto res =  SendToInner(req, typeIn, typeOut);
     return SendToInner(req, typeIn, typeOut);
 };
 

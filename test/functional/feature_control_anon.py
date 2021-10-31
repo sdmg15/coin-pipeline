@@ -104,9 +104,9 @@ class ControlAnonTest(GhostTestFramework):
         self.start_node(2, ['-wallet=default_wallet', '-debug', '-anonrestricted=0', '-reservebalance=10000000', '-stakethreadconddelayms=500', '-txindex=1', '-maxtxfee=1'])
 
         self.connect_nodes_bi(0, 2)
-        assert nodes[0].getblockcount() == 0
-        assert nodes[1].getblockcount() == 0
-        assert nodes[2].getblockcount() == 0
+        assert_equal(nodes[0].getblockcount(), 0)
+        assert_equal(nodes[1].getblockcount(), 0)
+        assert_equal(nodes[2].getblockcount(), 0)
 
         anon_tx_txid4 = nodes[0].sendtypeto('ghost', 'anon', [{'address': sx0, 'amount': 15}])
         assert anon_tx_txid4 != ""
@@ -117,9 +117,9 @@ class ControlAnonTest(GhostTestFramework):
 
         assert anon_tx_txid4 in node0Block1['tx']
 
-        assert nodes[0].getblockcount() == 1
-        assert nodes[1].getblockcount() == 0
-        assert nodes[2].getblockcount() == 1
+        assert_equal(nodes[0].getblockcount(), 1)
+        assert_equal(nodes[1].getblockcount(), 0)
+        assert_equal(nodes[2].getblockcount(), 1)
 
         res = nodes[1].submitblock(node0Block1Hex)
         assert_equal("anon-blind-tx-invalid", res)

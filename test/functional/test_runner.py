@@ -321,6 +321,7 @@ PARTICL_SCRIPTS = [
     'p2p_part_disable_types.py',
     'feature_control_anon.py',
     'feature_control_anon2.py',
+    'feature_control_anon3.py',
 ]
 
 PARTICL_SCRIPTS_EXT = [

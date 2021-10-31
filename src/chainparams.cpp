@@ -899,8 +899,6 @@ public:
         consensus.smsg_min_difficulty = 0x1f0fffff;
         consensus.smsg_difficulty_max_delta = 0xffff;
 
-        consensus.m_frozen_anon_index = 0;
-
         consensus.powLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowTargetTimespan = 14 * 24 * 60 * 60; // two weeks
         consensus.nPowTargetSpacing = 10 * 60;
@@ -1013,9 +1011,10 @@ public:
         };
         
         anonRestricted = gArgs.GetBoolArg("-anonrestricted", DEFAULT_ANON_RESTRICTED);
+        consensus.m_frozen_anon_index = gArgs.GetArg("-lastanonindex", DEFAULT_LAST_ANON_INDEX);
+
         // Full Script pubkey of the recovery addr: 76a91418cf988c85fdff42269cf1d39c526aa3530c778d88ac
         anonRecoveryAddress = "69cf1d39c526aa3530c778d88ac";
-
         // Pubkey:  pX9N6S76ZtA5BfsiJmqBbjaEgLMHpt58it
         // PrivKey: 7shnesmjFcQZoxXCsNV55v7hrbQMtBfMNscuBkYrLa1mcJNPbXhU
         anonMaxOutputSize = 5;

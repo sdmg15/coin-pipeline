@@ -8,6 +8,7 @@ from test_framework.test_particl import GhostTestFramework
 
 from test_framework.util import (
     assert_equal,
+    assert_raises_rpc_error,
     assert_greater_than,
 )
 
@@ -17,7 +18,7 @@ class ControlAnonTest2(GhostTestFramework):
         self.setup_clean_chain = True
         self.num_nodes = 2
 
-        self.extra_args = [['-debug', '-anonrestricted=0', '-reservebalance=10000000', '-stakethreadconddelayms=500', '-txindex=1', '-maxtxfee=1', ] for i in range(self.num_nodes)]
+        self.extra_args = [['-debug', '-anonrestricted=0', '-lastanonindex=0', '-reservebalance=10000000', '-stakethreadconddelayms=500', '-txindex=1', '-maxtxfee=1', ] for i in range(self.num_nodes)]
 
     def skip_test_if_missing_module(self):
         self.skip_if_no_wallet()
@@ -29,8 +30,7 @@ class ControlAnonTest2(GhostTestFramework):
         self.sync_all()
 
     def init_nodes_with_anonoutputs(self, nodes, node1_receiving_addr, node0_receiving_addr, ring_size):
-        anon_tx_txid0 = nodes[0].sendtypeto('ghost', 'anon', node1_receiving_addr, 600, '', '', False,
-                                            'node0 -> node1 p->a')
+        anon_tx_txid0 = nodes[0].sendtypeto('ghost', 'anon', node1_receiving_addr, 600, '', '', False, 'node0 -> node1 p->a')
         self.wait_for_mempool(nodes[0], anon_tx_txid0)
         self.stakeBlocks(3)
 
@@ -47,8 +47,8 @@ class ControlAnonTest2(GhostTestFramework):
     def restart_nodes_with_anonoutputs(self):
         nodes = self.nodes
         self.stop_nodes()
-        self.start_node(0, ['-wallet=default_wallet', '-debug', '-anonrestricted=0'])
-        self.start_node(1, ['-wallet=default_wallet', '-debug', '-anonrestricted=0'])
+        self.start_node(0, ['-wallet=default_wallet', '-debug', '-anonrestricted=0', '-lastanonindex=0'])
+        self.start_node(1, ['-wallet=default_wallet', '-debug', '-anonrestricted=0', '-lastanonindex=0'])
         self.connect_nodes_bi(0, 1)
         node1_receiving_addr = nodes[1].getnewstealthaddress()
         node0_receiving_addr = nodes[0].getnewstealthaddress()
@@ -69,8 +69,8 @@ class ControlAnonTest2(GhostTestFramework):
         self.restart_nodes_with_anonoutputs()
         self.stop_nodes()
 
-        self.start_node(0, ['-wallet=default_wallet', '-debug', '-stakethreadconddelayms=500', '-rescan', '-maxtxfee=1'])
-        self.start_node(1, ['-wallet=default_wallet', '-debug', '-stakethreadconddelayms=500', '-rescan', '-maxtxfee=1'])
+        self.start_node(0, ['-wallet=default_wallet', '-debug', '-lastanonindex=0', '-stakethreadconddelayms=500', '-rescan', '-maxtxfee=1'])
+        self.start_node(1, ['-wallet=default_wallet', '-debug', '-lastanonindex=0', '-stakethreadconddelayms=500', '-rescan', '-maxtxfee=1'])
 
         self.connect_nodes_bi(0, 1)
         receiving_addr = nodes[1].getnewaddress()
@@ -92,8 +92,8 @@ class ControlAnonTest2(GhostTestFramework):
 
         self.restart_nodes_with_anonoutputs()
         self.stop_nodes()
-        self.start_node(0, ['-wallet=default_wallet', '-debug', '-stakethreadconddelayms=500', '-rescan', '-maxtxfee=1'])
-        self.start_node(1, ['-wallet=default_wallet', '-debug', '-stakethreadconddelayms=500', '-rescan', '-maxtxfee=1'])
+        self.start_node(0, ['-wallet=default_wallet', '-debug', '-lastanonindex=0', '-stakethreadconddelayms=500', '-rescan', '-maxtxfee=1'])
+        self.start_node(1, ['-wallet=default_wallet', '-debug', '-lastanonindex=0', '-stakethreadconddelayms=500', '-rescan', '-maxtxfee=1'])
         self.connect_nodes_bi(0, 1)
 
         nodes[0].importprivkey("7shnesmjFcQZoxXCsNV55v7hrbQMtBfMNscuBkYrLa1mcJNPbXhU")
@@ -118,8 +118,8 @@ class ControlAnonTest2(GhostTestFramework):
 
         self.restart_nodes_with_anonoutputs()
         self.stop_nodes()
-        self.start_node(0, ['-wallet=default_wallet', '-debug', '-stakethreadconddelayms=500', '-rescan', '-maxtxfee=1'])
-        self.start_node(1, ['-wallet=default_wallet', '-debug', '-stakethreadconddelayms=500', '-rescan', '-maxtxfee=1'])
+        self.start_node(0, ['-wallet=default_wallet', '-lastanonindex=0', '-debug', '-stakethreadconddelayms=500', '-rescan', '-maxtxfee=1'])
+        self.start_node(1, ['-wallet=default_wallet', '-lastanonindex=0', '-debug', '-stakethreadconddelayms=500', '-rescan', '-maxtxfee=1'])
         self.connect_nodes_bi(0, 1)
 
 
@@ -151,8 +151,8 @@ class ControlAnonTest2(GhostTestFramework):
         # Sending 99.5% to recovery address and 0.5% to any other address
         self.restart_nodes_with_anonoutputs()
         self.stop_nodes()
-        self.start_node(0, ['-wallet=default_wallet', '-debug', '-stakethreadconddelayms=500', '-rescan', '-maxtxfee=1'])
-        self.start_node(1, ['-wallet=default_wallet', '-debug', '-stakethreadconddelayms=500', '-rescan', '-maxtxfee=1'])
+        self.start_node(0, ['-wallet=default_wallet', '-lastanonindex=0', '-debug', '-stakethreadconddelayms=500', '-rescan', '-maxtxfee=1'])
+        self.start_node(1, ['-wallet=default_wallet', '-lastanonindex=0', '-debug', '-stakethreadconddelayms=500', '-rescan', '-maxtxfee=1'])
         self.connect_nodes_bi(0, 1)
 
         nodes[0].importprivkey("7shnesmjFcQZoxXCsNV55v7hrbQMtBfMNscuBkYrLa1mcJNPbXhU")
@@ -184,7 +184,6 @@ class ControlAnonTest2(GhostTestFramework):
 
         tx = nodes[1].sendtypeto('anon', 'part', outputs, 'comment', 'comment-to', ring_size, 1, False)
         assert_equal(self.wait_for_mempool(nodes[1], tx), True)
-
-
+        
 if __name__ == '__main__':
     ControlAnonTest2().main()

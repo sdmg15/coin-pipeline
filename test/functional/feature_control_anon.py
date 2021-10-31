@@ -41,11 +41,11 @@ class ControlAnonTest(GhostTestFramework):
         print("ANON TXID 1 " + anon_tx_txid1)
         # This is False because the tx was created inside the wallet but
         # unable to add it inside the mempool
-        assert not self.wait_for_mempool(nodes[1], anon_tx_txid1)
+        assert_equal(self.wait_for_mempool(nodes[1], anon_tx_txid1), False)
 
         blind_tx_txid1 = nodes[1].sendtypeto('ghost', 'blind', [{'address': sx0, 'amount': 15}])
         print("ANON TXID 2" + blind_tx_txid1)
-        assert not self.wait_for_mempool(nodes[1], blind_tx_txid1)
+        assert_equal(self.wait_for_mempool(nodes[1], blind_tx_txid1), False)
 
         # Restart the nodes with anon tx enabled
         # Note: Anon output is enabled so this should pass both nodes should be able to sync together
@@ -62,11 +62,11 @@ class ControlAnonTest(GhostTestFramework):
         # With -anonrestricted=0 the tx will be added to the mempool
         anon_tx_txid2 = nodes[1].sendtypeto('ghost', 'anon', [{'address': sx0, 'amount': 15}])
         print("ANON TXID 2 " + anon_tx_txid2)
-        assert self.wait_for_mempool(nodes[1], anon_tx_txid2)
+        assert_equal(self.wait_for_mempool(nodes[1], anon_tx_txid2), True)
 
         blind_tx_txid2 = nodes[1].sendtypeto('ghost', 'blind', [{'address': sx0, 'amount': 15}])
         print("BLIND TXID 2" + blind_tx_txid2)
-        assert self.wait_for_mempool(nodes[1], blind_tx_txid2)
+        assert_equal(self.wait_for_mempool(nodes[1], blind_tx_txid2), True)
         self.sync_all()
 
         # Restart the nodes: node 0 with anon enabled and node 1 with anon disabled

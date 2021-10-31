@@ -7,7 +7,6 @@ import decimal
 from test_framework.test_particl import GhostTestFramework
 
 from test_framework.util import (
-    assert_raises_rpc_error,
     assert_equal,
     assert_greater_than,
 )
@@ -29,31 +28,45 @@ class ControlAnonTest2(GhostTestFramework):
         self.connect_nodes_bi(0, 1)
         self.sync_all()
 
+    def init_nodes_with_anonoutputs(self, nodes, node1_receiving_addr, node0_receiving_addr, ring_size):
+        anon_tx_txid0 = nodes[0].sendtypeto('ghost', 'anon', node1_receiving_addr, 600, '', '', False,
+                                            'node0 -> node1 p->a')
+        self.wait_for_mempool(nodes[0], anon_tx_txid0)
+        self.stakeBlocks(3)
+
+        unspent_filtered_node1 = nodes[1].listunspentanon(0, 9999, [node1_receiving_addr])
+
+        while True:
+            unspent_fil_node0 = nodes[0].listunspentanon(0, 9999, [node0_receiving_addr])
+            if len(unspent_fil_node0) < ring_size * len(unspent_filtered_node1):
+                nodes[0].sendparttoanon(node0_receiving_addr, 1000, '', '', False, 'node0 -> node1 p->a')
+                self.stakeBlocks(4)
+            else:
+                break
+
+    def restart_nodes_with_anonoutputs(self):
+        nodes = self.nodes
+        self.stop_nodes()
+        self.start_node(0, ['-wallet=default_wallet', '-debug', '-anonrestricted=0'])
+        self.start_node(1, ['-wallet=default_wallet', '-debug', '-anonrestricted=0'])
+        self.connect_nodes_bi(0, 1)
+        node1_receiving_addr = nodes[1].getnewstealthaddress()
+        node0_receiving_addr = nodes[0].getnewstealthaddress()
+        self.init_nodes_with_anonoutputs(nodes, node1_receiving_addr, node0_receiving_addr, 3)
+        self.stop_nodes()
+
+        self.start_node(0, ['-wallet=default_wallet', '-debug'])
+        self.start_node(1, ['-wallet=default_wallet', '-debug'])
+        self.connect_nodes_bi(0, 1)
+        self.sync_all()
+
     def run_test(self):
         nodes = self.nodes
         self.import_genesis_coins_a(nodes[0])
         self.import_genesis_coins_b(nodes[1])
-
-        node1_receiving_addr = nodes[1].getnewstealthaddress()
-        node0_receiving_addr = nodes[0].getnewstealthaddress()
         ring_size = 3
 
-        def init_nodes_with_anonoutputs(nodes):
-            anon_tx_txid0 = nodes[0].sendtypeto('ghost', 'anon', node1_receiving_addr, 600, '', '', False, 'node0 -> node1 p->a')
-            self.wait_for_mempool(nodes[0], anon_tx_txid0)
-            self.stakeBlocks(3)
-
-            unspent_filtered_node1 = nodes[1].listunspentanon(0, 9999, [node1_receiving_addr])
-
-            while True:
-                unspent_fil_node0 = nodes[0].listunspentanon(0, 9999, [node0_receiving_addr])
-                if len(unspent_fil_node0) < ring_size * len(unspent_filtered_node1):
-                    nodes[0].sendparttoanon(node0_receiving_addr, 1000, '', '', False, 'node0 -> node1 p->a')
-                    self.stakeBlocks(4)
-                else:
-                    break
-
-        init_nodes_with_anonoutputs(nodes)
+        self.restart_nodes_with_anonoutputs()
         self.stop_nodes()
 
         self.start_node(0, ['-wallet=default_wallet', '-debug', '-stakethreadconddelayms=500', '-rescan', '-maxtxfee=1'])
@@ -62,16 +75,12 @@ class ControlAnonTest2(GhostTestFramework):
         self.connect_nodes_bi(0, 1)
         receiving_addr = nodes[1].getnewaddress()
 
-        node1_unspent_list = nodes[1].listunspentanon(0, 9999, [node1_receiving_addr])
-
-        sum_anonoutput_amount = 0
-        for unspent in node1_unspent_list:
-            sum_anonoutput_amount += unspent['amount']
+        anon_balance = nodes[1].getwalletinfo()["anon_balance"]
 
         outputs = [{
             'address': receiving_addr,
             'type': 'standard',
-            'amount': sum_anonoutput_amount,
+            'amount': anon_balance,
             'subfee': True
         }]
 
@@ -81,68 +90,48 @@ class ControlAnonTest2(GhostTestFramework):
         # Now trying to spend to the recovery address, node 0 owns the recovery address
         # Send to recovery address
 
+        self.restart_nodes_with_anonoutputs()
         self.stop_nodes()
-        self.start_node(0, ['-wallet=default_wallet', '-debug', '-anonrestricted=0'])
-        self.start_node(1, ['-wallet=default_wallet', '-debug', '-anonrestricted=0'])
+        self.start_node(0, ['-wallet=default_wallet', '-debug', '-stakethreadconddelayms=500', '-rescan', '-maxtxfee=1'])
+        self.start_node(1, ['-wallet=default_wallet', '-debug', '-stakethreadconddelayms=500', '-rescan', '-maxtxfee=1'])
         self.connect_nodes_bi(0, 1)
-        init_nodes_with_anonoutputs(nodes)
-        self.stop_nodes()
-
-        self.start_node(0, ['-wallet=default_wallet', '-debug'])
-        self.start_node(1, ['-wallet=default_wallet', '-debug'])
-        self.connect_nodes_bi(0, 1)
-        self.sync_all()
 
         nodes[0].importprivkey("7shnesmjFcQZoxXCsNV55v7hrbQMtBfMNscuBkYrLa1mcJNPbXhU")
         recovery_addr = "pX9N6S76ZtA5BfsiJmqBbjaEgLMHpt58it"
 
-        node1_unspent_list = nodes[1].listunspentanon(0, 9999, [node1_receiving_addr])
+        anon_balance = nodes[1].getwalletinfo()["anon_balance"]
 
-        sum_anonoutput_amount = 0
-        for unspent in node1_unspent_list:
-            sum_anonoutput_amount += unspent['amount']
-
-        assert_greater_than(sum_anonoutput_amount, 0)
+        assert_greater_than(anon_balance, 0)
 
         outputs = [{
             'address': recovery_addr,
             'type': 'standard',
-            'amount': sum_anonoutput_amount,
+            'amount': anon_balance,
             'subfee': True
         }]
 
         tx = nodes[1].sendtypeto('anon', 'part', outputs, 'comment', 'comment-to', ring_size, 1, False)
         assert_equal(self.wait_for_mempool(nodes[1], tx), True)
 
-
         # Sending less than 99.5% to recovery address and random amount to other address
         # This will fail
 
+        self.restart_nodes_with_anonoutputs()
         self.stop_nodes()
-        self.start_node(0, ['-wallet=default_wallet', '-debug', '-anonrestricted=0'])
-        self.start_node(1, ['-wallet=default_wallet', '-debug', '-anonrestricted=0'])
+        self.start_node(0, ['-wallet=default_wallet', '-debug', '-stakethreadconddelayms=500', '-rescan', '-maxtxfee=1'])
+        self.start_node(1, ['-wallet=default_wallet', '-debug', '-stakethreadconddelayms=500', '-rescan', '-maxtxfee=1'])
         self.connect_nodes_bi(0, 1)
-        init_nodes_with_anonoutputs(nodes)
-        self.stop_nodes()
 
-        self.start_node(0, ['-wallet=default_wallet', '-debug'])
-        self.start_node(1, ['-wallet=default_wallet', '-debug'])
-        self.connect_nodes_bi(0, 1)
-        self.sync_all()
 
         nodes[0].importprivkey("7shnesmjFcQZoxXCsNV55v7hrbQMtBfMNscuBkYrLa1mcJNPbXhU")
         recovery_addr = "pX9N6S76ZtA5BfsiJmqBbjaEgLMHpt58it"
 
-        node1_unspent_list = nodes[1].listunspentanon(0, 9999, [node1_receiving_addr])
+        anon_balance = nodes[1].getwalletinfo()["anon_balance"]
 
-        sum_anonoutput_amount = 0
-        for unspent in node1_unspent_list:
-            sum_anonoutput_amount += unspent['amount']
+        assert_greater_than(anon_balance, 0)
 
-        assert_greater_than(sum_anonoutput_amount, 0)
-
-        amount_to_send_recovery_addr = int(sum_anonoutput_amount * decimal.Decimal(0.90))
-        remaining = int(sum_anonoutput_amount - amount_to_send_recovery_addr)
+        amount_to_send_recovery_addr = int(anon_balance * decimal.Decimal(0.90))
+        remaining = int(anon_balance - amount_to_send_recovery_addr)
 
         outputs = [{
             'address': recovery_addr,
@@ -159,37 +148,25 @@ class ControlAnonTest2(GhostTestFramework):
         tx = nodes[1].sendtypeto('anon', 'part', outputs, 'comment', 'comment-to', ring_size, 1, False)
         assert_equal(self.wait_for_mempool(nodes[1], tx), False)
 
-
         # Sending 99.5% to recovery address and 0.5% to any other address
-
+        self.restart_nodes_with_anonoutputs()
         self.stop_nodes()
-        self.start_node(0, ['-wallet=default_wallet', '-debug', '-anonrestricted=0'])
-        self.start_node(1, ['-wallet=default_wallet', '-debug', '-anonrestricted=0'])
+        self.start_node(0, ['-wallet=default_wallet', '-debug', '-stakethreadconddelayms=500', '-rescan', '-maxtxfee=1'])
+        self.start_node(1, ['-wallet=default_wallet', '-debug', '-stakethreadconddelayms=500', '-rescan', '-maxtxfee=1'])
         self.connect_nodes_bi(0, 1)
-        init_nodes_with_anonoutputs(nodes)
-        self.stop_nodes()
-
-        self.start_node(0, ['-wallet=default_wallet', '-debug'])
-        self.start_node(1, ['-wallet=default_wallet', '-debug'])
-        self.connect_nodes_bi(0, 1)
-        self.sync_all()
 
         nodes[0].importprivkey("7shnesmjFcQZoxXCsNV55v7hrbQMtBfMNscuBkYrLa1mcJNPbXhU")
         recovery_addr = "pX9N6S76ZtA5BfsiJmqBbjaEgLMHpt58it"
 
-        node1_unspent_list = nodes[1].listunspentanon(0, 9999, [node1_receiving_addr])
+        anon_balance = nodes[1].getwalletinfo()["anon_balance"]
 
-        sum_anonoutput_amount = 0
-        for unspent in node1_unspent_list:
-            sum_anonoutput_amount += unspent['amount']
+        assert_greater_than(anon_balance, 0)
 
-        assert_greater_than(sum_anonoutput_amount, 0)
-
-        amount_to_send_recovery_addr = int(sum_anonoutput_amount * decimal.Decimal(0.95))
+        amount_to_send_recovery_addr = int(anon_balance * decimal.Decimal(0.95))
         # Add another 5% from remaining amount in order to cover fees
         amount_to_send_recovery_addr += int(remaining * decimal.Decimal(0.5))
 
-        remaining = int(sum_anonoutput_amount - amount_to_send_recovery_addr)
+        remaining = int(anon_balance - amount_to_send_recovery_addr)
 
         outputs = [{
             'address': recovery_addr,

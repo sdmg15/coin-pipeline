@@ -1,8 +1,7 @@
 // Copyright (c) 2021 Ghost Core Team
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
-
-#include <adapter.h>
+#include "adapter.h"
 
 bool is_ghost_debug() {
     return gArgs.GetBoolArg("-ghostdebug", DEFAULT_GHOSTDEBUG);

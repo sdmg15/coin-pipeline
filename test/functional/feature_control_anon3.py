@@ -62,23 +62,25 @@ class ControlAnonTest3(GhostTestFramework):
         nodes = self.nodes
         self.import_genesis_coins_a(nodes[0])
         self.import_genesis_coins_b(nodes[1])
-        ring_size = 3
-
+     
         # Restart the nodes with some anon index
         self.restart_nodes_with_anonoutputs()
         self.stop_nodes()
 
+        # Node 0 has its lastanonindex defaulted to 0
         self.start_node(0, ['-wallet=default_wallet', '-debug', '-stakethreadconddelayms=500', '-txindex=1', '-maxtxfee=1'])
+        # Node 1 has its anon index set to 100
         self.start_node(1, ['-wallet=default_wallet', '-debug', '-lastanonindex=100'
                             '-stakethreadconddelayms=500', '-txindex=1', '-maxtxfee=1'])
 
         self.connect_nodes_bi(0, 1)
         receiving_addr = nodes[0].getnewaddress()
 
-        bad_anon_tx_txid = nodes[0].sendtypeto('anon', 'part', [{'address': receiving_addr, 'amount': 15, 'subfee': True}])
-        
+        # Sending a transaction from anon to ghost being inside node 0 will succeed
+        bad_anon_tx_txid = nodes[0].sendtypeto('anon', 'ghost', [{'address': receiving_addr, 'amount': 15, 'subfee': True}])
         assert_equal(self.wait_for_mempool(nodes[0], bad_anon_tx_txid), True)
         
+        # The transaction succeeded inside node but it won't inside node 1 because of the bad anon index
         rawtx_bad_anon_txid = nodes[0].getrawtransaction(bad_anon_tx_txid)
         assert_raises_rpc_error(None, "bad-anonin-extract-i", nodes[1].sendrawtransaction, rawtx_bad_anon_txid)
 

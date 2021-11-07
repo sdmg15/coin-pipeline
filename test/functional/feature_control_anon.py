@@ -95,7 +95,10 @@ class ControlAnonTest(GhostTestFramework):
         except Exception as e:
             assert "Mempool sync timed out" in str(e)
 
-
+        
+        # Attempt to spend normal outputs and it should succeed
+        standard_tx_txid = nodes[0].sendtypeto('standard', 'standard', [{'address': sx0, 'amount': 15}])
+        assert_equal(self.wait_for_mempool(nodes[0], standard_tx_txid), True)
         self.stop_nodes()
 
         self.start_node(0, ['-wallet=default_wallet', '-debug', '-anonrestricted=0', '-reservebalance=10000000', '-stakethreadconddelayms=500', '-txindex=1', '-maxtxfee=1'])

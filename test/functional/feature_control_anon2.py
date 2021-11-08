@@ -8,7 +8,6 @@ from test_framework.test_particl import GhostTestFramework
 
 from test_framework.util import (
     assert_equal,
-    assert_raises_rpc_error,
     assert_greater_than,
 )
 

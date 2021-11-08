@@ -97,6 +97,7 @@ class ControlAnonTest(GhostTestFramework):
 
         
         # Attempt to spend normal outputs and it should succeed
+        # Note: standard == part == ghost
         standard_tx_txid = nodes[0].sendtypeto('standard', 'standard', [{'address': sx0, 'amount': 15}])
         assert_equal(self.wait_for_mempool(nodes[0], standard_tx_txid), True)
         self.stop_nodes()
@@ -115,6 +116,7 @@ class ControlAnonTest(GhostTestFramework):
         assert anon_tx_txid4 != ""
         self.stakeToHeight(1, nStakeNode=0, nSyncCheckNode=False, fSync=False)
 
+        # Attempt to submit block with invalid transactions
         node0Block1 = nodes[0].getblock(nodes[0].getblockhash(1))
         node0Block1Hex = nodes[0].getblock(nodes[0].getblockhash(1), 0)
 

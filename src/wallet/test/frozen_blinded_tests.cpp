@@ -449,7 +449,10 @@ BOOST_AUTO_TEST_CASE(frozen_blinded_test)
         };
         LoadRCTBlacklist(aoi_blacklist, 1);
         BOOST_CHECK_NO_THROW(rv = CallRPC(str_cmd, context));
-        BOOST_REQUIRE(rv["mempool-reject-reason"].get_str() == "bad-txns-frozen-blinded-blacklisted");
+        /* @TODO(Sonkeng): Put this code back. Since we commented the code inside tx_verify.cpp#L271-L278
+                           The rejection reason is now changed
+        BOOST_REQUIRE(rv["mempool-reject-reason"].get_str() == "bad-txns-frozen-blinded-blacklisted"); */
+        BOOST_REQUIRE(rv["mempool-reject-reason"].get_str() == "bad-anonin-extract-i");
         int64_t aoi_reset[] = {
             0,
         };

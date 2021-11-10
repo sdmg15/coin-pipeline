@@ -29,7 +29,7 @@ jobs:
       - name: Install dependencies
         env:
           CACHE_HIT: ${{steps.cache-apt.outputs.cache-hit}}
-          DEPS: build-essential libtool autotools-dev automake pkg-config bsdmainutils curl git ca-certificates ccache
+          DEPS: build-essential libtool autotools-dev automake pkg-config bsdmainutils curl git ca-certificates ccache libqt5gui5 libqt5core5a libqt5dbus5 qttools5-dev qttools5-dev-tools
         run: |
           if [[ "$CACHE_HIT" == 'true' ]]; then
             sudo cp --force --recursive ~/apt-cache/* /
@@ -49,7 +49,7 @@ jobs:
         run: ./autogen.sh
 
       - name: Configure automake
-        run: ./configure --prefix=`pwd`/depends/${{ matrix.os }}
+        run: ./configure --prefix=`pwd`/depends/${{ matrix.os }} --with-gui=qt5
 
       - name: Build codebase
         run: make -j4
@@ -75,7 +75,7 @@ jobs:
         run: ./autogen.sh
 
       - name: Configure automake
-        run: ./configure --prefix=`pwd`/depends/${{ runner.os }}
+        run: ./configure --prefix=`pwd`/depends/${{ runner.os }} --with-gui=qt5
 
       - name: Build codebase
         run: make -j4

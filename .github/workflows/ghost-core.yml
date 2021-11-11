@@ -69,7 +69,7 @@ jobs:
           key: ccache-${{ runner.os }}-build-${{ github.sha }}
           restore-keys: ccache-${{ runner.os }}-build-
       - name: install dependencies
-        run: HOMEBREW_NO_AUTO_UPDATE=1 brew install automake libtool boost miniupnpc pkg-config python qt libevent qrencode protobuf hidapi librsvg sqlite berkeley-db4
+        run: HOMEBREW_NO_AUTO_UPDATE=1 brew install automake libtool boost miniupnpc pkg-config python qt@5 libevent qrencode protobuf hidapi librsvg sqlite berkeley-db4
   
       - name: Refresh automake configs
         run: ./autogen.sh
